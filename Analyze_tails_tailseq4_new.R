@@ -407,6 +407,15 @@ summarize_uridylation_replicates3 <- function(tail_data2) {
 }
 
 
+summarize_uridylation_replicates4 <- function(tail_data2) {
+  # function summarizing tails by tail type
+  tail_data <- tail_data2
+  tail_data_summarized <- ddply(tail_data, .(condition,  uridylated2,replicate), summarise, N = length(primer_name))
+  tail_data_summarized <- ddply(tail_data_summarized, .(condition,replicate), transform, freq = N/sum(N))
+  tail_data_summarized <- ddply(tail_data_summarized, .(condition,uridylated2), transform, mean_freq = mean(freq), sd = sd(freq))
+  return(tail_data_summarized)
+}
+
 ## FIGURES ##
 
 
@@ -1463,4 +1472,41 @@ plot_tail_lengths <- ggplot(summary_tail_types_table[summary_tail_types_table$ur
                                                                                                                                               fill = as.factor(uridylated), colours = as.factor(uridylated))) + geom_bar(aes(y = mean_freq), position = position_stack(),
                                                                                                                                                                                                                          stat = "identity") + scale_y_continuous() + xlab("ondition") + ylab("fraction of transcripts") +
   scale_fill_grey() + ggtitle(paste("OVEREXPRESSION, LINE1 UTR only reporter")) + geom_errorbar(aes(ymin = mean_freq -sd, ymax = mean_freq + sd),colour = "black", width = 0.1, position = position_dodge(0.9))
+print(plot_tail_lengths)
+
+
+tails_data_for_analysis_reporter_KD2<-tails_data_for_analysis_reporter_KD
+tails_data_for_analysis_reporter_KD2[tails_data_for_analysis_reporter_KD2$tail_length==1,]$tail_length<-0
+tails_data_for_analysis_reporter_KD2[tails_data_for_analysis_reporter_KD2$Utail_length<2 & tails_data_for_analysis_reporter_KD2$tail_type=='U_only',]$uridylated<-FALSE
+tails_data_for_analysis_reporter_KD2[tails_data_for_analysis_reporter_KD2$tail_length==0,]$uridylated<-FALSE
+
+
+summary_tail_types_table_name <- paste("repo_over_summarized_tails_types_by_condition")
+assign(summary_tail_types_table_name, summarize_uridylation_replicates3(tails_data_for_analysis_reporter_KD2))
+summary_tail_types_table <- eval(as.symbol(summary_tail_types_table_name))
+
+plot_tail_lengths <- ggplot(summary_tail_types_table[summary_tail_types_table$uridylated==TRUE & summary_tail_types_table$replicate==1,], aes(x = as.factor(condition),
+                                                                                                                                              fill = as.factor(uridylated), colours = as.factor(uridylated))) + geom_bar(aes(y = mean_freq), position = position_stack(),
+                                                                                                                                                                                                                         stat = "identity") + scale_y_continuous() + xlab("ondition") + ylab("fraction of transcripts") +
+  scale_fill_grey() + ggtitle(paste("KNOCKDOWN mod, LINE1 UTR only reporter")) + geom_errorbar(aes(ymin = mean_freq -sd, ymax = mean_freq + sd),colour = "black", width = 0.1, position = position_dodge(0.9))
+print(plot_tail_lengths)
+
+summary_tail_types_table_name <- paste("repo_over_summarized_tails_types_by_condition")
+assign(summary_tail_types_table_name, summarize_uridylation_replicates4(tails_data_mapped_true[tails_data_mapped_true$transcript=='REPORTERL1KD',]))
+summary_tail_types_table <- eval(as.symbol(summary_tail_types_table_name))
+
+plot_tail_lengths <- ggplot(summary_tail_types_table[summary_tail_types_table$uridylated==TRUE & summary_tail_types_table$replicate==1,], aes(x = as.factor(condition),
+                                                                                                                                              fill = as.factor(uridylated2), colours = as.factor(uridylated2))) + geom_bar(aes(y = mean_freq), position = position_stack(),
+                                                                                                                                                                                                                         stat = "identity") + scale_y_continuous() + xlab("ondition") + ylab("fraction of transcripts") +
+  scale_fill_grey() + ggtitle(paste("KNOCKDOWN mod, LINE1 UTR only reporter")) + geom_errorbar(aes(ymin = mean_freq -sd, ymax = mean_freq + sd),colour = "black", width = 0.1, position = position_dodge(0.9))
+print(plot_tail_lengths)
+
+summary_tail_types_table_name <- paste("repo_over_summarized_tails_types_by_condition")
+assign(summary_tail_types_table_name, summarize_uridylation_replicates4(tails_data_for_analysis_reporter_KD))
+summary_tail_types_table <- eval(as.symbol(summary_tail_types_table_name))
+
+plot_tail_lengths <- ggplot(summary_tail_types_table[summary_tail_types_table$uridylated==TRUE & summary_tail_types_table$replicate==1,], aes(x = as.factor(condition),
+                                                                                                                                              fill = as.factor(uridylated2), colours = as.factor(uridylated2))) + geom_bar(aes(y = mean_freq), position = position_stack(),
+                                                                                                                                                                                                                         stat = "identity") + scale_y_continuous() + xlab("ondition") + ylab("fraction of transcripts") +
+  scale_fill_grey() + ggtitle(paste("KNOCKDOWN mod, LINE1 UTR only reporter")) + geom_errorbar(aes(ymin = mean_freq -sd, ymax = mean_freq + sd),colour = "black", width = 0.1, position = position_dodge(0.9))
 print(plot_tail_lengths)

@@ -256,6 +256,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
             if(tailseq_delimiter_mismatch>0):
                 tails_results[seq_id]['CTGAC_R5_mismatched']=1
             clip3_R5_length = len(clipped_R5)
+#################### TO BE REWRITTEN #######################33
             # check if clipped fragment contains other stuff than A/U/AU tails (possible heterogenity of 3'end of LINE1)
             match_heterogenous_end_tail = re.search(
                 regex_for_heterogenous_end_tail, clipped_R5)
@@ -292,6 +293,9 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                 #R3_seq = R3_seq + heterogenous_end
                 #R3_mapping_pos = int(R3_mapping_pos) + \
                 #    number_heterogenous_nucleotides
+
+
+##########################################################################
 
         # get last mapped nucleotides - will be further used to identify A or U nucleotides which should be included in the tail sequence but were also present in the reference
         if (R5_mapping_pos != "-1"):
@@ -416,7 +420,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
             # create representation of tailseq-identified tail
             tailseq_tail = ''
             if (int(A_tail_length) > 0):
-                for i in range(0, int(A_tail_length)): 
+                for i in range(0, int(A_tail_length)):
                     tailseq_tail = tailseq_tail + "A"
                 tailseq_tail = tailseq_tail + additional_bases
 
@@ -594,7 +598,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                                         tails_results[seq_id]['tail_sequence'] = clipped_R5
                                         tails_results[seq_id]['mapping_position'] = R5_mapping_pos
                                     else:
-                                        # if not CTGAC was identified - store the possible tail sequence (but it will not be used in further analysis)
+                                        # if no CTGAC was identified - store the possible tail sequence (but it will not be used in further analysis)
                                         tails_results[seq_id]['tail_source'] = 'no_tailseq_clip_R5_R3'
                                         #for reporter (short) reads - take R3 sequence (as even those which dont have CTGAC in R5 will be treated as possible tails)
                                         #if ((transcript=="REPORTERL1") or (transcript=="REPORTERL1_overexp")):
