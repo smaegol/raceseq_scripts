@@ -416,7 +416,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
             # create representation of tailseq-identified tail
             tailseq_tail = ''
             if (int(A_tail_length) > 0):
-                for i in range(1, int(A_tail_length)):
+                for i in range(0, int(A_tail_length)): 
                     tailseq_tail = tailseq_tail + "A"
                 tailseq_tail = tailseq_tail + additional_bases
 

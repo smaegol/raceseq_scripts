@@ -35,6 +35,7 @@ melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_
 melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/all_old_script.tsv"
 melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/all_new_script_urid.tsv"
 melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/all/processing_out/all_flowcells_analysis_new_script_new_fixed_repliates_fixed_shortR5.tsv"
+melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_5/SSDNA_3/sabre_2_mism/processing_out_sabre/initial_test_switched_reporters.tsv"
 # read tailing information to data.frame using data.table
 tails_data_melt <- fread(melt_data_localization, sep = "\t", header = T, stringsAsFactors = T,
                          data.table = F, showProgress = TRUE)  # read data
