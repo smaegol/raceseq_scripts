@@ -1762,7 +1762,8 @@ all_data <- all_data %>% filter(tail_length <= 64)
 
 
 analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_min=NA,mapping_position_max=NA,project=NA,facet_projects=FALSE,conditions=NA) {
- 
+  
+  output = list()
   print(mapping_position_min)
   print(mapping_position_max)
   print(transcript2)
@@ -1777,7 +1778,7 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
   if(!is.na(project)) {
     test_trans <- test_trans %>% filter(project_name==project)
   }
-  if(length(conditions)>0) {
+  if(length(conditions)>0 & !is.na(conditions)) {
     test_trans <- test_trans %>% filter(condition %in% conditions)
   }
   print(test_trans)
@@ -1790,14 +1791,74 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
     test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
   }
   print(test_trans)
-  plot <- test_trans %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + ggtitle(paste(exp_type2,transcript2,"uridylation"))
-  if (facet_projects==TRUE) {
-    plot <- plot + facet_grid (project_name ~ .)
-  }
-  print(plot) 
+  test_trans <- test_trans %>% filter(uridylated2==TRUE)
+  output$calculated_values = test_trans
+  plot_out <- test_trans %>% ggplot(aes(x=condition)) + geom_bar(stat="identity",position="dodge",aes(y=mean_freq_urid)) + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + ggtitle(paste(exp_type2,transcript2,"uridylation"))
   
+  if (facet_projects==TRUE) {
+    plot_out <- plot_out + facet_grid (project_name ~ .)
+  }
+  output$dunn_test <- list()
+  if (facet_projects==TRUE) {
+    dunn_test_pval2<-c()
+    for (proj in levels(test_trans$project_name)) {
+      test_proj <- test_trans %>% filter(project_name==proj)
+      if(nrow(test_proj)>0) {
+        #print(proj)
+        dunn_test <- kwManyOneDunnTest(test_proj$freq_urid,test_proj$condition,p.adjust.method = "BH")
+        print(dunn_test)
+        output$dunn_test[[proj]] <- dunn_test
+        dunn_test_pval <- as.data.frame(dunn_test$p.value)
+        #dunn_test_pval2 <- c(0,dunn_test_pval[,1]) 
+        dunn_test_pval2<-c(dunn_test_pval2,dunn_test_pval[,1])
+      }
+    }
+  } else 
+  {
+    dunn_test <- kwManyOneDunnTest(test_trans$freq_urid,test_trans$condition,p.adjust.method = "BH")
+    print(dunn_test)
+    output$dunn_test <- dunn_test
+    dunn_test_pval <- as.data.frame(dunn_test$p.value)
+    dunn_test_pval2 <- dunn_test_pval[,1]
+  }
+  
+  
+  pg <- ggplot_build(plot_out)
+  plot_data<-as.data.frame(pg$data[2]) %>% group_by(group,PANEL) %>% summarise(max_pos = max(ymax)) %>% ungroup() %>% mutate(max_pos2=max(max_pos)) %>% mutate(y=max_pos2+0.05 + max_pos2*(0.05*group)) %>% filter(group!=1) %>% arrange(PANEL,group)
+  print(plot_data)
+  #create_annotation
+  if (facet_projects==TRUE) 
+  {
+    annotation <- test_trans %>% filter(uridylated2==TRUE) %>% group_by(project_name,condition) %>% summarise(replicate=mean(replicate)) %>% arrange(project_name,condition) %>% slice(-1)
+  } else 
+  {
+    annotation <- test_trans %>% filter(uridylated2==TRUE) %>% group_by(condition) %>%summarise(replicate=mean(replicate)) %>% slice(-1)
+  }
+  annotation$y=plot_data$y
+  annotation$pvalue=dunn_test_pval2
+  annotation$start=test_trans$condition[1]
+  annotation$sig=''
+  if(any(annotation$pvalue<=0.05)) {
+    annotation[annotation$pvalue<=0.05,]$sig <- "*"
+  }
+  if(any(annotation$pvalue<=0.01)) {
+    annotation[annotation$pvalue<=0.05,]$sig <- "**"
+  }
+  if(any(annotation$pvalue<=0.001)) {
+    annotation[annotation$pvalue<=0.05,]$sig <- "***"
+  }
+  annotation <- annotation[annotation$sig!='',]
+  print(annotation)
+  #create label from pvalue
+  if (nrow(annotation)>0) {
+    plot_out <- plot_out + geom_signif(data=annotation,aes(xmin=start, xmax=condition, annotations=sig, y_position=y),textsize = 10, vjust = 0.3,manual=TRUE)
+  }
+  
+  print(plot_out)
+  output$plot <- plot_out
+  return(output)
+  #return(ggplot_build(plot_out))
 }
-
 all_data_reporter_overexp_ACTB <- all_data %>% filter(transcript=='ACTB',exp_type=="OVR")
 
 all_data_reporter_overexp2_ACTB <- all_data_reporter_overexp_ACTB %>% group_by(condition,replicate,project_name,uridylated2)
