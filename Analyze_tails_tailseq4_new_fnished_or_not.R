@@ -1798,7 +1798,7 @@ for (trans in levels(as.factor(tails_data_mapped_true_no_hetero_no_other_tails$t
   min_map = mapping_summary[2]
   max_map = mapping_summary[5]
   test_trans2 <- test_trans2  %>% filter(mapping_position>min_map & mapping_position<max_map)
-  test_trans2$condition <- as.character(test_trans2$condition) 
+  test_trans2$condition <- as.character(test_trans2$condition)
   test_trans2$condition <- as.factor(test_trans2$condition)
   for (cond in levels(as.factor(test_trans2$condition))) {
     print(cond)
@@ -1807,50 +1807,5 @@ for (trans in levels(as.factor(tails_data_mapped_true_no_hetero_no_other_tails$t
     test_plot <- test_plot + facet_grid(project_name ~ .)
     print(test_plot)
   }
-}
-dev.off()
-
-
-all_data <- tails_data_mapped_true_no_hetero_no_other_tails %>% select(V1,tail_sequence,tail_type,Atail,Atail_length,Utail_length,tail_length,tail_source,transcript,cell_line,localization,condition,replicate,primer_name,project_name,mapping_position,exp_type,CTGAC_R5,terminal_nucleotides,uridylated,uridylated2,tailed,mapped) %>% group_by(project_name,condition,replicate,transcript,primer_name,cell_line,uridylated2)
-
-all_data_reporter_overexp <- all_data %>% filter(transcript=='REPORTERL1_overexp',exp_type=="OVR",mapping_position<9010,mapping_position>8950)
-
-all_data_reporter_overexp2 <- all_data_reporter_overexp %>% group_by(condition,replicate,project_name,uridylated2)
-
-all_data_reporter_overexp3 <- all_data_reporter_overexp2 %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
-all_data_reporter_overexp3 %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid))
-
-
-all_data_reporter_overexp_ACTB <- all_data %>% filter(transcript=='ACTB',exp_type=="OVR")
-
-all_data_reporter_overexp2_ACTB <- all_data_reporter_overexp_ACTB %>% group_by(condition,replicate,project_name,uridylated2)
-
-all_data_reporter_overexp3_ACTB <- all_data_reporter_overexp2_ACTB %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
-all_data_reporter_overexp3_ACTB %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid))
-
-pdf("OVR_transcripts.pdf")
-for (trans in levels(as.factor(tails_data_mapped_true_no_hetero_no_other_tails$transcript))) {
-print(trans)
-  test_trans <- all_data %>% filter(transcript==trans,exp_type=="OVR")
-
-  test_trans <- test_trans %>% group_by(condition,replicate,project_name,uridylated2)
-
-  test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
-  plot <- test_trans %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + ggtitle(paste("OVR",trans))
-  print(plot)
-}
-dev.off()
-
-
-pdf("KD_transcripts.pdf")
-for (trans in levels(as.factor(tails_data_mapped_true_no_hetero_no_other_tails$transcript))) {
-print(trans)
-  test_trans <- all_data %>% filter(transcript==trans,exp_type=="KD")
-
-  test_trans <- test_trans %>% group_by(condition,replicate,project_name,uridylated2)
-
-  test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
-  plot <- test_trans %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + ggtitle(paste("KD",trans))
-  print(plot)
 }
 dev.off()
