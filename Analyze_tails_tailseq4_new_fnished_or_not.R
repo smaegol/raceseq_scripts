@@ -27,15 +27,6 @@ library(dplyr)
 library(ggseqlogo)
 library(RColorBrewer)
 
-#melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_3/sabre_2mism/processing_out_sabre/tailseq4_2.tsv"
-#melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/tailseq4_ovr.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_3/sabre_2mism/processing_out_sabre/tailseq4_5_all_with_rmask.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/tailseq4_6.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/test_new_script.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/all_old_script.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/SSDNA_2_no_spk_128/sabre_2_mism/processing_out_sabre/all_new_script_urid.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_4/all/processing_out/all_flowcells_analysis_new_script_new_fixed_repliates_fixed_shortR5.tsv"
-melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_5/SSDNA_3/sabre_2_mism/processing_out_sabre/initial_test_switched_reporters.tsv"
 melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_5/ALL/processing_out/all_samples_2_3_4_5_anal.tsv"
 # read tailing information to data.frame using data.table
 tails_data_melt <- fread(melt_data_localization, sep = "\t", header = T, stringsAsFactors = T,
@@ -1765,6 +1756,55 @@ for (transcript in levels(as.factor(tails_data_mapped_true_no_hetero_no_other_ta
 }
 
 dev.off()
+
+all_data <- tails_data_mapped_true_no_hetero_no_other_tails %>% select(V1,tail_sequence,tail_type,Atail,Atail_length,Utail_length,tail_length,tail_source,transcript,cell_line,localization,condition,replicate,primer_name,project_name,mapping_position,exp_type,CTGAC_R5,terminal_nucleotides,uridylated,uridylated2,tailed,mapped) %>% group_by(project_name,condition,replicate,transcript,primer_name,cell_line,uridylated)
+all_data <- all_data %>% filter(tail_length <= 64)
+
+
+analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_min=NA,mapping_position_max=NA,project=NA,facet_projects=FALSE,conditions=NA) {
+ 
+  print(mapping_position_min)
+  print(mapping_position_max)
+  print(transcript2)
+  print(exp_type2)
+  test_trans <- dataset %>% filter(transcript==transcript2,exp_type==exp_type2)
+  if (!is.na(mapping_position_min)) {
+    test_trans <- test_trans %>% filter(mapping_position>mapping_position_min)
+  }
+  if (!is.na(mapping_position_max)) {
+    test_trans <- test_trans %>% filter(mapping_position<mapping_position_max)
+  }
+  if(!is.na(project)) {
+    test_trans <- test_trans %>% filter(project_name==project)
+  }
+  if(length(conditions)>0) {
+    test_trans <- test_trans %>% filter(condition %in% conditions)
+  }
+  print(test_trans)
+  test_trans <- test_trans %>% group_by(condition,replicate,project_name,uridylated2)
+  print(test_trans)
+  if (facet_projects == FALSE) {
+    test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+  }
+  else {
+    test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+  }
+  print(test_trans)
+  plot <- test_trans %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + ggtitle(paste(exp_type2,transcript2,"uridylation"))
+  if (facet_projects==TRUE) {
+    plot <- plot + facet_grid (project_name ~ .)
+  }
+  print(plot) 
+  
+}
+
+all_data_reporter_overexp_ACTB <- all_data %>% filter(transcript=='ACTB',exp_type=="OVR")
+
+all_data_reporter_overexp2_ACTB <- all_data_reporter_overexp_ACTB %>% group_by(condition,replicate,project_name,uridylated2)
+
+all_data_reporter_overexp3_ACTB <- all_data_reporter_overexp2_ACTB %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+all_data_reporter_overexp3_ACTB %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition)) + geom_bar(aes(y=mean_freq_urid),stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + facet_grid(project_name ~ .)
+
 
 pdf("mapping_trans.pdf",width=12)
 test_trans_select <- tails_data_mapped_true_no_hetero_no_other_tails  %>% select(tail_type,Utail_length,tail_length,transcript,replicate,condition,replicate,primer_name,project_name,mapping_position,R3_mapping_position,uridylated,uridylated2,exp_type) %>% group_by(project_name,condition,transcript,primer_name,uridylated,replicate)
