@@ -1761,6 +1761,50 @@ dev.off()
 all_data <- tails_data_mapped_true_no_hetero_no_other_tails %>% select(V1,tail_sequence,tail_type,Atail,Atail_length,Utail_length,tail_length,tail_source,transcript,cell_line,localization,condition,replicate,primer_name,project_name,mapping_position,exp_type,CTGAC_R5,terminal_nucleotides,uridylated,uridylated2,tailed,mapped) %>% group_by(project_name,condition,replicate,transcript,primer_name,cell_line,uridylated)
 all_data <- all_data %>% filter(tail_length <= 64)
 
+all_data[all_data$condition=='CNTRLKD_HGC' & all_data$replicate==1,]$replicate <- 4
+all_data[all_data$condition=='CNTRLKD_HGC' & all_data$replicate==2,]$replicate <- 5
+all_data[all_data$condition=='CNTRLKD_HGC' & all_data$replicate==3,]$replicate <- 6
+all_data[all_data$condition=='CNTRLKD_MGC' & all_data$replicate==1,]$replicate <- 7
+all_data[all_data$condition=='CNTRLKD_MGC' & all_data$replicate==2,]$replicate <- 8
+all_data[all_data$condition=='CNTRLKD_MGC' & all_data$replicate==3,]$replicate <- 9
+all_data[all_data$condition=='CNTRLKD_MGC',]$condition <- 'CNTRLKD'
+all_data[all_data$condition=='CNTRLKD_HGC',]$condition <- 'CNTRLKD'
+
+all_data[all_data$condition=='CONTROLKD_HGC' & all_data$replicate==1,]$replicate <- 4
+all_data[all_data$condition=='CONTROLKD_HGC' & all_data$replicate==2,]$replicate <- 5
+all_data[all_data$condition=='CONTROLKD_HGC' & all_data$replicate==3,]$replicate <- 6
+all_data[all_data$condition=='CONTROLKD_MGC' & all_data$replicate==1,]$replicate <- 7
+all_data[all_data$condition=='CONTROLKD_MGC' & all_data$replicate==2,]$replicate <- 8
+all_data[all_data$condition=='CONTROLKD_MGC' & all_data$replicate==3,]$replicate <- 9
+all_data[all_data$condition=='CONTROLKD_MGC',]$condition <- 'CNTRLKD'
+all_data[all_data$condition=='CONTROLKD_HGC',]$condition <- 'CNTRLKD'
+
+
+
+all_data2 <- tails_data_mapped_true %>% select(V1,tail_sequence,tail_type,Atail,Atail_length,Utail_length,tail_length,tail_source,transcript,cell_line,localization,condition,replicate,primer_name,project_name,mapping_position,exp_type,CTGAC_R5,terminal_nucleotides,uridylated,uridylated2,tailed,mapped) %>% group_by(project_name,condition,replicate,transcript,primer_name,cell_line,uridylated)
+all_data2 <- all_data2 %>% filter(tail_length <= 64)
+
+all_data2[all_data2$condition=='CNTRLKD_HGC' & all_data2$replicate==1,]$replicate <- 4
+all_data2[all_data2$condition=='CNTRLKD_HGC' & all_data2$replicate==2,]$replicate <- 5
+all_data2[all_data2$condition=='CNTRLKD_HGC' & all_data2$replicate==3,]$replicate <- 6
+all_data2[all_data2$condition=='CNTRLKD_MGC' & all_data2$replicate==1,]$replicate <- 7
+all_data2[all_data2$condition=='CNTRLKD_MGC' & all_data2$replicate==2,]$replicate <- 8
+all_data2[all_data2$condition=='CNTRLKD_MGC' & all_data2$replicate==3,]$replicate <- 9
+all_data2[all_data2$condition=='CNTRLKD_MGC',]$condition <- 'CNTRLKD'
+all_data2[all_data2$condition=='CNTRLKD_HGC',]$condition <- 'CNTRLKD'
+
+all_data2[all_data2$condition=='CONTROLKD_HGC' & all_data2$replicate==1,]$replicate <- 4
+all_data2[all_data2$condition=='CONTROLKD_HGC' & all_data2$replicate==2,]$replicate <- 5
+all_data2[all_data2$condition=='CONTROLKD_HGC' & all_data2$replicate==3,]$replicate <- 6
+all_data2[all_data2$condition=='CONTROLKD_MGC' & all_data2$replicate==1,]$replicate <- 7
+all_data2[all_data2$condition=='CONTROLKD_MGC' & all_data2$replicate==2,]$replicate <- 8
+all_data2[all_data2$condition=='CONTROLKD_MGC' & all_data2$replicate==3,]$replicate <- 9
+all_data2[all_data2$condition=='CONTROLKD_MGC',]$condition <- 'CNTRLKD'
+all_data2[all_data2$condition=='CONTROLKD_HGC',]$condition <- 'CNTRLKD'
+
+
+all_data_LEAP <- all_data %>% filter(exp_type == "LEAP")
+
 
 analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_min=NA,mapping_position_max=NA,project=NA,facet_projects=FALSE,conditions=NA) {
   
@@ -1896,6 +1940,7 @@ all_data_reporter_overexp2_ACTB <- all_data_reporter_overexp_ACTB %>% group_by(c
 
 all_data_reporter_overexp3_ACTB <- all_data_reporter_overexp2_ACTB %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
 all_data_reporter_overexp3_ACTB %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=condition)) + geom_bar(aes(y=mean_freq_urid),stat="identity",position="dodge") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + geom_jitter(aes(y=freq_urid)) + facet_grid(project_name ~ .)
+
 
 
 pdf("mapping_trans.pdf",width=12)

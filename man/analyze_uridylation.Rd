@@ -6,7 +6,7 @@
 \usage{
 analyze_uridylation(dataset, transcript2, exp_type2,
   mapping_position_min = NA, mapping_position_max = NA, project = NA,
-  facet_projects = FALSE, conditions = NA)
+  facet_projects = FALSE, conditions = NA, include_jitter = TRUE)
 }
 \arguments{
 \item{dataset}{- dataset to analyze}
