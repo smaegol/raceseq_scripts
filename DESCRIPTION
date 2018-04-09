@@ -1,0 +1,20 @@
+Package: RaceSeq
+Type: Package
+Title: Race-Seq analysis
+Version: 0.1.0
+Author: Pawel Krawczyk
+Maintainer: Pawel Krawczyk <p.krawczyk@ibb.waw.pl>
+Description: Analysis of RACEseq data (coupled with Tail-Seq)
+    Provide convenient functions for analysis RACE-seq output, plotting and statistics
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    assertthat,
+    ggplot2,
+    PMCMRplus
+RoxygenNote: 6.0.1
+Suggests: 
+    covr,
+    testthat
