@@ -1,12 +1,3 @@
-library(dplyr)
-library(ggplot2)
-library(PMCMRplus)
-
-
-
-
-
-
 #' Title
 #'
 #' @param dataset 
@@ -136,7 +127,7 @@ process_data <- function(dataset) {
   
   
   
-  all_data <- tails_data_mapped_true_no_hetero_no_other_tails %>% select(V1,tail_sequence,tail_type,Atail,Atail_length,Utail_length,tail_length,tail_source,transcript,cell_line,localization,condition,replicate,primer_name,project_name,mapping_position,exp_type,CTGAC_R5,terminal_nucleotides,uridylated,uridylated2,tailed,mapped) %>% group_by(project_name,condition,replicate,transcript,primer_name,cell_line,uridylated)
+  all_data <- processed_dataset_mapped_true_no_hetero_no_other_tails %>% select(V1,tail_sequence,tail_type,Atail,Atail_length,Utail_length,tail_length,tail_source,transcript,cell_line,localization,condition,replicate,primer_name,project_name,mapping_position,exp_type,CTGAC_R5,terminal_nucleotides,uridylated,uridylated2,tailed,mapped) %>% dplyr::group_by(project_name,condition,replicate,transcript,primer_name,cell_line,uridylated)
   all_data <- all_data %>% filter(tail_length <= 64)
   return(all_data)
 }
@@ -160,40 +151,41 @@ process_data <- function(dataset) {
 #' analyze_uridylation(all_data,"ACTB","OVR",project=c("Tailseq_4","Tailseq_5"),facet_projects==TRUE,conditions=c("CNTRL","TUT4WT","TUT7WT","MOV10"))
 analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_min=NA,mapping_position_max=NA,project=NA,facet_projects=FALSE,conditions=NA,include_jitter=TRUE) {
   
+  
   output = list() #list for storing output
-  print(mapping_position_min)
-  print(mapping_position_max)
-  print(transcript2)
-  print(exp_type2)
+  #print(mapping_position_min)
+ # print(mapping_position_max)
+  #print(transcript2)
+  #print(exp_type2)
   #get filtered data from input dataset
   #first, filter by transcript and experiment type (OVR,KD,LEAP)
-  test_trans <- dataset %>% filter(transcript==transcript2,exp_type==exp_type2) 
+  test_trans <- dataset %>% dplyr::filter(transcript==transcript2,exp_type==exp_type2) 
   plot_title <- paste(exp_type2,transcript2,"uridylation")
   #if min and max mapping positions are specified - used for filtering
   if (!is.na(mapping_position_min)) {
-    test_trans <- test_trans %>% filter(mapping_position>mapping_position_min)
+    test_trans <- test_trans %>% dplyr::filter(mapping_position>mapping_position_min)
     plot_title <- paste(plot_title,"min map pos: ",mapping_position_min)
   }
   if (!is.na(mapping_position_max)) {
-    test_trans <- test_trans %>% filter(mapping_position<mapping_position_max)
+    test_trans <- test_trans %>% dplyr::filter(mapping_position<mapping_position_max)
     plot_title <- paste(plot_title,"max map pos: ",mapping_position_max)
   }
   #if project is specified - used for filtering
   if(!is.na(project)) {
     if (length(project==1)) {
-      test_trans <- test_trans %>% filter(project_name==project)
+      test_trans <- test_trans %>% dplyr::filter(project_name==project)
     } else {
-      test_trans <- test_trans %>% filter(project_name %in% project)
+      test_trans <- test_trans %>% dplyr::filter(project_name %in% project)
     }
   }
   #if conditions are specified - use for filtering
   if(length(conditions)>0 & !is.na(conditions)) {
-    test_trans <- test_trans %>% filter(condition %in% conditions)
+    test_trans <- test_trans %>% dplyr::filter(condition %in% conditions)
   }
-  print(test_trans)
+  #print(test_trans)
   #group data by co
-  test_trans <- test_trans %>% group_by(condition,replicate,project_name,uridylated2)
-  print(test_trans)
+  test_trans <- test_trans %>% dplyr::group_by(condition,replicate,project_name,uridylated2)
+  #print(test_trans)
   #summarize uridylation data using dplyr
   if (facet_projects == FALSE) {
     test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
@@ -202,9 +194,9 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
     #if using facets - group by projects also
     test_trans <- test_trans %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(condition,replicate,project_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(condition,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
   }
-  print(test_trans)
+  #print(test_trans)
   #leave only uridylation values (exclude uridylation == FALSE)
-  test_trans <- test_trans %>% filter(uridylated2==TRUE) 
+  test_trans <- test_trans %>% dplyr::filter(uridylated2==TRUE) 
   #store calculated values
   output$calculated_values = test_trans
   #select data for plot
@@ -229,15 +221,17 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
     dunn_test_pval2<-c() #vector for storing dunn test pvalues 
     for (proj in levels(test_trans$project_name)) {
       #iterate tgrough projects
-      test_proj <- test_trans %>% filter(project_name==proj) #filter data for single project
+      test_proj <- test_trans %>% dplyr::filter(project_name==proj) #filter data for single project
       if(nrow(test_proj)>0) { 
         #if there are any data after filtering, calculate Dunn's test
         #print(proj)
         #calculate Dunn using kwManyOneDunnTest from PCMCRPlus package
         dunn_test <- kwManyOneDunnTest(test_proj$freq_urid,test_proj$condition,p.adjust.method = "BH")
-        print(dunn_test)
+       # print(dunn_test)
         #store Dunn test results in a list
-        output$dunn_test[[proj]] <- dunn_test
+        dunn_output<-dunn_test$p.value
+        colnames(dunn_output)<-c("p.value (Dunn test)")
+        output$dunn_test[[proj]] <- dunn_output
         dunn_test_pval <- as.data.frame(dunn_test$p.value) # get pvalues
         #dunn_test_pval2 <- c(0,dunn_test_pval[,1]) 
         dunn_test_pval2<-c(dunn_test_pval2,dunn_test_pval[,1]) #store pvalues
@@ -246,8 +240,11 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
   } else #if no facets, calculate Dunn for all projects together
   {
     dunn_test <- kwManyOneDunnTest(test_trans$freq_urid,test_trans$condition,p.adjust.method = "BH")
-    print(dunn_test)
-    output$dunn_test <- dunn_test
+  #  print(dunn_test)
+    dunn_output<-dunn_test$p.value
+    colnames(dunn_output)<-c("p.value (Dunn test)")
+    output$dunn_test <- dunn_output
+
     dunn_test_pval <- as.data.frame(dunn_test$p.value)
     dunn_test_pval2 <- dunn_test_pval[,1] #store pvalues
   }
@@ -255,16 +252,19 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
   #get plot data to build info about significance
   pg <- ggplot_build(plot_out)
   #get max position of error bars from plot data (pg$data[2]), group by PANEL (facets) and group (condition)
-  plot_data<-as.data.frame(pg$data[2]) %>% group_by(group,PANEL) %>% summarise(max_pos = max(ymax)) %>% ungroup() %>% mutate(max_pos2=max(max_pos)) %>% mutate(y=max_pos2+0.05 + max_pos2*(0.05*group)) %>% filter(group!=1) %>% arrange(PANEL,group)
-  print(plot_data)
+  plot_data<-as.data.frame(pg$data[2]) %>% dplyr::group_by(group,PANEL) %>% summarise(max_pos = max(ymax)) %>% ungroup() %>% mutate(max_pos2=max(max_pos)) %>% mutate(y=max_pos2+0.05 + max_pos2*(0.25*group)) %>% dplyr::filter(group!=1) %>% arrange(PANEL,group)
+#  print(plot_data)
   #create_annotation
   if (facet_projects==TRUE) 
   {
-    annotation <- test_trans %>% filter(uridylated2==TRUE) %>% group_by(project_name,condition) %>% summarise(replicate=mean(replicate)) %>% arrange(project_name,condition) %>% slice(-1)
+    annotation <- test_trans %>% dplyr::filter(uridylated2==TRUE) %>% dplyr::group_by(project_name,condition) %>% summarise(replicate=mean(replicate)) %>% arrange(project_name,condition) %>% slice(-1)
   } else 
   {
-    annotation <- test_trans %>% filter(uridylated2==TRUE) %>% group_by(condition) %>%summarise(replicate=mean(replicate)) %>% slice(-1)
+    annotation <- test_trans %>% dplyr::filter(uridylated2==TRUE) %>% dplyr::group_by(condition) %>%summarise(replicate=mean(replicate)) %>% slice(-1)
   }
+  #calculate ylim
+  ylim_value = max(plot_data$y) +0.15 * max(plot_data$y)
+  plot_out = plot_out + expand_limits(y=c(0,ylim_value))
   #get position of significance marks from plot data
   annotation$y=plot_data$y
   #store pvalues from Dunn's test
@@ -284,13 +284,13 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
   }
   #exclude from annotation all conditions without signficance
   annotation <- annotation[annotation$sig!='',]
-  print(annotation)
+ # print(annotation)
   #if there atre any significant differences
   if (nrow(annotation)>0) {
-    plot_out <- plot_out + geom_signif(data=annotation,aes(xmin=start, xmax=condition, annotations=sig, y_position=y),textsize = 10, vjust = 0.3,manual=TRUE)
+    plot_out <- plot_out + geom_signif(data=annotation,aes(xmin=start, xmax=condition, annotations=sig, y_position=y),textsize = 10, vjust = 0.6,manual=TRUE)
   }
   
-  print(plot_out) #print plot
+  #print(plot_out) #print plot
   output$plot <- plot_out #store plot in output
   return(output) #return output
   
@@ -309,29 +309,34 @@ analyze_uridylation <- function(dataset,transcript2,exp_type2,mapping_position_m
 #' @param mapping_position_max   - maximum mapping position to include on plot
 #' @param facet_projects         - show facets  on projects
 #' @param facet_replicates       - show facets on replicates 
+#' @param project 
 #'
 #' @return                       - plot with mapping positions
 #' @export
 #'
 #' @examples
-plot_mapping_positions <- function(dataset,trans,exp_type2,conditions = NA,mapping_position_min = NA,mapping_position_max = NA,facet_projects = FALSE,facet_replicates = FALSE) {
+plot_mapping_positions <- function(dataset,trans,exp_type2,conditions = NA,mapping_position_min = NA,mapping_position_max = NA,project = NA, facet_projects = FALSE,facet_replicates = FALSE) {
   #filter input dataset to include only required transcript and experiment type
-  test_trans <- dataset %>% filter(transcript==trans)
-  test_trans <- test_trans %>% filter(exp_type==exp_type2)
+  test_trans <- dataset %>% dplyr::filter(transcript==trans)
+  test_trans <- test_trans %>% dplyr::filter(exp_type==exp_type2)
   #create plot title
   plot_title <- paste(exp_type2,trans,sep=",")
   #if min and max mapping positions are specified - used for filtering
   if (!is.na(mapping_position_min)) {
-    test_trans <- test_trans %>% filter(mapping_position>mapping_position_min)
+    test_trans <- test_trans %>% dplyr::filter(mapping_position>mapping_position_min)
     plot_title <- paste(plot_title,"min map pos: ",mapping_position_min)
   }
   if (!is.na(mapping_position_max)) {
-    test_trans <- test_trans %>% filter(mapping_position<mapping_position_max)
+    test_trans <- test_trans %>% dplyr::filter(mapping_position<mapping_position_max)
     plot_title <- paste(plot_title,"max map pos: ",mapping_position_max)
+  }
+  #if project is specified - used for filtering
+  if (length(project)>0) {
+    test_trans <- test_trans %>% dplyr::filter(project_name %in% project)
   }
   #if conditions are specified - use for filtering
   if(length(conditions)>0 & !is.na(conditions)) {
-    test_trans <- test_trans %>% filter(condition %in% conditions)
+    test_trans <- test_trans %>% dplyr::filter(condition %in% conditions)
     plot_title <- paste(plot_title,paste(conditions,collapse=", "),sep="; ")
   }
   test_trans$condition <- as.character(test_trans$condition)
@@ -351,7 +356,7 @@ plot_mapping_positions <- function(dataset,trans,exp_type2,conditions = NA,mappi
   else if (facet_replicates==TRUE) {
     plot_out <- plot_out + facet_grid (replicate ~ .)
   }
-  print(plot_out)
+  #print(plot_out)
   return(plot_out)
 }
 
@@ -428,9 +433,13 @@ plot_tail_length_distribution <- function(dataset,trans,exp_type2,conditions = N
   else if (facet_tail_types==TRUE) {
     plot_out <- plot_out + facet_grid (tail_type ~ .)
   }
-  print(plot_out)
+ # print(plot_out)
+  return(plot_out)
 }
 
 
 #analyze_uridylation()
 plot_tail_length_distribution(all_data,"LEAP_AU","LEAP",conditions=c("19A","19A3U"),max_tail_length = 30, min_tail_length=10,facet_conditions = T,AUtail = 'Ataila')
+
+plot_tail_length_distribution(all_data,"LEAP_AU","LEAP",conditions=c("19A","19A3U"),max_tail_length = 30, min_tail_length=10,facet_conditions = T,AUtail = 'Ataila')
+

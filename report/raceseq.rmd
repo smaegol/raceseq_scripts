@@ -1,0 +1,64 @@
+---
+title: "Raceseq"
+author: "PK"
+date: "9 04 2018"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE,message=FALSE,warning=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(PMCMRplus)
+library(data.table)
+library(ggsignif)
+#melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_5/ALL/processing_out/all_samples_2_3_4_5_anal.tsv"
+#data_melt<-fread(melt_data_localization)
+```
+
+
+```{r process data, include=FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+#data_processed <- process_data(data_melt)
+```
+
+# Uridyaltion
+
+## Reporter L1 overexpression
+
+Overexpression analyzed first for all mapped reads, irrespective of mapping position (UTR,SV40 signal), only for TUTases and MOV10:
+
+```{r reporter ovr urid, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+reporterl1_urid <- analyze_uridylation(data_processed,"REPORTERL1_overexp","OVR",include_jitter=T,facet_projects = TRUE,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"))
+print(reporterl1_urid$dunn_test)
+print(reporterl1_urid$plot)
+```
+
+Analysis of mapping positions revealed differences between experiments:
+
+```{r reporter ovr mapping, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+ovr_mapping_pos <- plot_mapping_positions(data_processed,'REPORTERL1_overexp','OVR',conditions = c("CNTRL"),mapping_position_min = 8900, mapping_position_max = 9200, facet_projects = T)
+```
+
+Therefore, analysis was limited for reads which mapped to the LINE1 UTR, upstream of SV40 signal:
+
+```{r reporter ovr urid UTR, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+reporterl1_urid <- analyze_uridylation(data_processed,"REPORTERL1_overexp","OVR",include_jitter=T,facet_projects = TRUE,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"),mapping_position_max = 9010)
+print(reporterl1_urid$dunn_test)
+print(reporterl1_urid$plot)
+
+print("All sqeuencing run together:")
+reporterl1_urid <- analyze_uridylation(data_processed,"REPORTERL1_overexp","OVR",include_jitter=T,facet_projects = FALSE,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"),mapping_position_max = 9010)
+
+print("Dunn test statistics:")
+print(reporterl1_urid$dunn_test)
+print(reporterl1_urid$plot)
+#analyze_uridylation()
+```
+
+``` {r tail lengths distribution,message=FALSE,warning=FALSE,echo=FALSE}
+distrib<-plot_tail_length_distribution(data_processed,"LEAP_AU","LEAP",conditions=c("19A","19A3U"),max_tail_length = 30, min_tail_length=10,facet_conditions = T,AUtail = 'Ataila')
+print(distrib)
+```

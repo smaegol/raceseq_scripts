@@ -13,7 +13,8 @@ Imports:
     dplyr,
     assertthat,
     ggplot2,
-    PMCMRplus
+    PMCMRplus,
+    ggsignif
 RoxygenNote: 6.0.1
 Suggests: 
     covr,
