@@ -1,0 +1,93 @@
+---
+title: "LEAP"
+author: "PK"
+date: "10 04 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE,message=FALSE,warning=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(PMCMRplus)
+library(data.table)
+library(ggsignif)
+#melt_data_localization <- "/home/smaegol/storage/analyses/tail_seq_5/ALL/processing_out/all_samples_2_3_4_5_anal.tsv"
+#data_melt<-fread(melt_data_localization)
+```
+
+# LEAP
+
+## predefined transcript ends - tail lengths
+
+```{r plot_LEAP,include=TRUE,message=FALSE,warning=FALSE,echo=FALSE}
+LEAP_data <- all_data %>% filter(transcript=="LEAP_AU")
+print(cond)
+LEAP_data$condition <- as.character(LEAP_data$condition)
+LEAP_data$condition <- as.factor(LEAP_data$condition)
+for (cond in levels(LEAP_data$condition)) {
+  plot_data <- LEAP_data %>% filter(condition==cond) %>% group_by(condition,tail_length) %>% count() %>% ungroup() %>% mutate(all_reads = sum(n)) %>% mutate(fraction=n/all_reads) 
+  max_fraction = max(plot_data[-c(1,2,3),]$fraction)
+  max_fraction_length = plot_data[which.max(plot_data[-c(1,2,3),]$fraction)+3,]$tail_length
+  print(paste("most frequent tail length:",max_fraction_length,"(",max_fraction,")"))
+  plot <- plot_data %>% ggplot(aes(x=tail_length,y=fraction)) + geom_line() + ggtitle(paste("LEAP",cond))
+  print(plot)
+  
+}
+```
+
+## predefined transcript ends - tail lengths (A tails only)
+
+```{r plot_LEAP_Atail,include=TRUE,message=FALSE,warning=FALSE,echo=FALSE}
+LEAP_data <- all_data %>% filter(transcript=="LEAP_AU")
+print(cond)
+LEAP_data$condition <- as.character(LEAP_data$condition)
+LEAP_data$condition <- as.factor(LEAP_data$condition)
+for (cond in levels(LEAP_data$condition)) {
+  plot_data <- LEAP_data %>% filter(condition==cond) %>% group_by(condition,Atail_length) %>% count() %>% ungroup() %>% mutate(all_reads = sum(n)) %>% mutate(fraction=n/all_reads) 
+  max_fraction = max(plot_data[-c(1,2,3),]$fraction)
+  max_fraction_length = plot_data[which.max(plot_data[-c(1,2,3),]$fraction)+3,]$Atail_length
+  print(paste("most frequent tail length:",max_fraction_length,"(",max_fraction,")"))
+  plot <- plot_data %>% ggplot(aes(x=Atail_length,y=fraction)) + geom_line() + ggtitle(paste("LEAP A-tails only",cond))
+  print(plot)
+  
+}
+```
+
+## predefined transcript ends - tail lengths (U tails only)
+
+```{r plot_LEAP_Utail,include=TRUE,message=FALSE,warning=FALSE,echo=FALSE}
+LEAP_data <- all_data %>% filter(transcript=="LEAP_AU")
+print(cond)
+LEAP_data$condition <- as.character(LEAP_data$condition)
+LEAP_data$condition <- as.factor(LEAP_data$condition)
+for (cond in levels(LEAP_data$condition)) {
+  plot_data <- LEAP_data %>% filter(condition==cond) %>% group_by(condition,Utail_length) %>% count() %>% ungroup() %>% mutate(all_reads = sum(n)) %>% mutate(fraction=n/all_reads) 
+  max_fraction = max(plot_data[-c(1,2),]$fraction)
+  max_fraction_length = plot_data[which.max(plot_data[-c(1,2),]$fraction)+2,]$Utail_length
+  print(paste("most frequent tail length:",max_fraction_length,"(",max_fraction,")"))
+  plot <- plot_data %>% ggplot(aes(x=Utail_length,y=fraction)) + geom_line() + ggtitle(paste("LEAP U-tails only",cond))
+  print(plot)
+  
+}
+```
+
+
+## predefined transcript ends - tail lengths (U tails only in AUtails)
+
+```{r plot_LEAP_Utail_AU,include=TRUE,message=FALSE,warning=FALSE,echo=FALSE}
+LEAP_data <- all_data %>% filter(transcript=="LEAP_AU")
+print(cond)
+LEAP_data$condition <- as.character(LEAP_data$condition)
+LEAP_data$condition <- as.factor(LEAP_data$condition)
+for (cond in levels(LEAP_data$condition)) {
+  plot_data <- LEAP_data %>% filter(tail_type=='AU',condition==cond) %>% group_by(condition,Utail_length) %>% count() %>% ungroup() %>% mutate(all_reads = sum(n)) %>% mutate(fraction=n/all_reads) 
+  max_fraction = max(plot_data[,]$fraction)
+  max_fraction_length = plot_data[which.max(plot_data[,]$fraction),]$Utail_length
+  print(paste("most frequent tail length:",max_fraction_length,"(",max_fraction,")"))
+  plot <- plot_data %>% ggplot(aes(x=Utail_length,y=fraction)) + geom_line() + ggtitle(paste("LEAP U-tails only",cond))
+  print(plot)
+  
+}
+```
+

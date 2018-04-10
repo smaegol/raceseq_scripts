@@ -331,7 +331,8 @@ plot_mapping_positions <- function(dataset,trans,exp_type2,conditions = NA,mappi
     plot_title <- paste(plot_title,"max map pos: ",mapping_position_max)
   }
   #if project is specified - used for filtering
-  if (length(project)>0) {
+  
+  if (length(project)>0 & !is.na(project)) {
     test_trans <- test_trans %>% dplyr::filter(project_name %in% project)
   }
   #if conditions are specified - use for filtering
@@ -381,7 +382,7 @@ plot_mapping_positions <- function(dataset,trans,exp_type2,conditions = NA,mappi
 #' @export
 #'
 #' @examples
-plot_tail_length_distribution <- function(dataset,trans,exp_type2,conditions = NA,mapping_position_min = NA,mapping_position_max = NA,facet_conditions = FALSE,facet_replicates = FALSE,max_tail_length = NA, min_tail_length = NA, facet_tail_types = FALSE,AUtail = NA) {
+plot_tail_length_distribution <- function(dataset,trans,exp_type2,conditions = NA,mapping_position_min = NA,mapping_position_max = NA,facet_conditions = FALSE,facet_replicates = FALSE,max_tail_length = NA, min_tail_length = NA, facet_tail_types = FALSE,AUtail = NA,binsize=1) {
   test_trans <- dataset %>% filter(transcript==trans)
   test_trans <- test_trans %>% filter(exp_type==exp_type2)
   
@@ -421,7 +422,7 @@ plot_tail_length_distribution <- function(dataset,trans,exp_type2,conditions = N
 
   
   plot_out <- ggplot(test_trans,aes(x=tail_length,group=tail_type,colour=tail_type)) 
-  plot_out <- plot_out + stat_bin(binwidth=1,aes(x=tail_length,y=..count..,colour=tail_type),geom="line") 
+  plot_out <- plot_out + stat_bin(binwidth=binsize,aes(x=tail_length,y=..ncount..,colour=tail_type),geom="line") 
   plot_out <- plot_out +  ggtitle(plot_title)
   #create facets 
   if (facet_conditions==TRUE) {
@@ -438,8 +439,86 @@ plot_tail_length_distribution <- function(dataset,trans,exp_type2,conditions = N
 }
 
 
+#' Plot tail length disribution 2
+#'
+#' @param dataset               - input dataset
+#' @param trans                 - transcript to analyze
+#' @param exp_type2             - experiment type (OVR,KD,LEAP,NT)
+#' @param conditions            - conditions to include (vector)
+#' @param mapping_position_min  - minimal mapping position to include
+#' @param mapping_position_max  - maximal mapping position to include
+#' @param facet_conditions      - facet by conditions
+#' @param facet_replicates      - facet by replicates
+#' @param max_tail_length       - max tail length to include
+#' @param min_tail_length       - min tail length to include
+#' @param facet_tail_types      - facet by tail types
+#' @param AUtail                - specify A or U tail part only ('Atail' or 'Utail', other values ignored)
+#'
+#' @return                      - plot with tail lengths distribution
+#' @export
+#'
+#' @examples
+plot_tail_length_distribution2 <- function(dataset,trans,exp_type2,conditions = NA,mapping_position_min = NA,mapping_position_max = NA,facet_conditions = FALSE,facet_replicates = FALSE,max_tail_length = NA, min_tail_length = NA, facet_tail_types = FALSE,AUtail = NA,binsize=1) {
+  test_trans <- dataset %>% filter(transcript==trans)
+  test_trans <- test_trans %>% filter(exp_type==exp_type2)
+  
+  plot_title <- trans
+  if (!is.na(AUtail)) {
+    if (AUtail == 'Atail') {
+      test_trans <- test_trans %>% mutate(tail_length = Atail_length)
+      plot_title <- paste(plot_title,"A tail length only",sep=",")
+    } else if (AUtail =='Utail') {
+      test_trans <- test_trans %>% mutate(tail_length = Utail_length)
+      plot_title <- paste(plot_title,"U tail length only",sep=",")
+    }
+  }
+  #if min and max mapping positions are specified - used for filtering
+  if (!is.na(mapping_position_min)) {
+    test_trans <- test_trans %>% filter(mapping_position>mapping_position_min)
+  }
+  if (!is.na(mapping_position_max)) {
+    test_trans <- test_trans %>% filter(mapping_position<mapping_position_max)
+  }
+  if (!is.na(min_tail_length)) {
+    test_trans <- test_trans %>% filter(tail_length>min_tail_length)
+  }
+  if (!is.na(max_tail_length)) {
+    test_trans <- test_trans %>% filter(tail_length<max_tail_length)
+  }
+  #if conditions are specified - use for filtering
+  if(length(conditions)>0 & !is.na(conditions)) {
+    test_trans <- test_trans %>% filter(condition %in% conditions,tail_length>0)
+  }
+  
+  test_trans$condition <- as.character(test_trans$condition)
+  test_trans$condition <- as.factor(test_trans$condition)
+  test_trans$tail_type <- as.character(test_trans$tail_type)
+  test_trans$tail_type <- as.factor(test_trans$tail_type)
+  
+  
+  
+  plot_out <- ggplot(test_trans,aes(x=tail_length,group=condition,colour=condition)) 
+  plot_out <- plot_out + stat_bin(binwidth=binsize,aes(x=tail_length,y=..count..,colour=condition),geom="line") 
+  plot_out <- plot_out +  ggtitle(plot_title)
+  #create facets 
+  if (facet_conditions==TRUE) {
+    plot_out <- plot_out + facet_grid (condition ~ .)
+  }
+  else if (facet_replicates==TRUE) {
+    plot_out <- plot_out + facet_grid (replicate ~ .)
+  }
+  else if (facet_tail_types==TRUE) {
+    plot_out <- plot_out + facet_grid (tail_type ~ .)
+  }
+  # print(plot_out)
+  return(plot_out)
+}
+
 #analyze_uridylation()
 plot_tail_length_distribution(all_data,"LEAP_AU","LEAP",conditions=c("19A","19A3U"),max_tail_length = 30, min_tail_length=10,facet_conditions = T,AUtail = 'Ataila')
 
-plot_tail_length_distribution(all_data,"LEAP_AU","LEAP",conditions=c("19A","19A3U"),max_tail_length = 30, min_tail_length=10,facet_conditions = T,AUtail = 'Ataila')
+plot_tail_length_distribution(all_data,"LEAP_AU","LEAP",conditions=c("26A","26A2U","26A4U","26A6U","26A14U"),max_tail_length = 42, min_tail_length=20,facet_conditions = T,AUtail = 'Ataila',binsize = 2
+                            )
 
+
+plot_data <- LEAP_data %>% filter(Utail_length>0,condition %in% cond) %>% group_by(condition,Utail_length) %>% count() %>% group_by(condition) %>% mutate(all_reads = sum(n)) %>% mutate(fraction=n/all_reads) 

@@ -26,9 +26,9 @@ library(ggsignif)
 
 # Uridyaltion
 
-## Reporter L1 overexpression
+# Reporter L1 overexpression
 
-Overexpression analyzed first for all mapped reads, irrespective of mapping position (UTR,SV40 signal), only for TUTases and MOV10:
+#### Overexpression analyzed first for all mapped reads, irrespective of mapping position (UTR,SV40 signal), only for TUTases and MOV10:
 
 ```{r reporter ovr urid, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
 reporterl1_urid <- analyze_uridylation(data_processed,"REPORTERL1_overexp","OVR",include_jitter=T,facet_projects = TRUE,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"))
@@ -36,13 +36,13 @@ print(reporterl1_urid$dunn_test)
 print(reporterl1_urid$plot)
 ```
 
-Analysis of mapping positions revealed differences between experiments:
+#### Analysis of mapping positions revealed differences between experiments:
 
-```{r reporter ovr mapping, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+```{r reporter ovr mapping1, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
 ovr_mapping_pos <- plot_mapping_positions(data_processed,'REPORTERL1_overexp','OVR',conditions = c("CNTRL"),mapping_position_min = 8900, mapping_position_max = 9200, facet_projects = T)
 ```
 
-Therefore, analysis was limited for reads which mapped to the LINE1 UTR, upstream of SV40 signal:
+#### Therefore, analysis was limited for reads which mapped to the LINE1 UTR, upstream of SV40 signal:
 
 ```{r reporter ovr urid UTR, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
 reporterl1_urid <- analyze_uridylation(data_processed,"REPORTERL1_overexp","OVR",include_jitter=T,facet_projects = TRUE,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"),mapping_position_max = 9010)
@@ -58,7 +58,109 @@ print(reporterl1_urid$plot)
 #analyze_uridylation()
 ```
 
+#### Run 2 and 4 only
+
+```{r reporter ovr urid UTR_taisleq_2_4, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+
+print("Tailseq_2 and Tailseq_4 only:")
+reporterl1_urid <- analyze_uridylation(data_processed,"REPORTERL1_overexp","OVR",include_jitter=T,facet_projects = FALSE,project = c("Tailseq_4","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"),mapping_position_max = 9010)
+
+print("Dunn test statistics:")
+print(reporterl1_urid$dunn_test)
+print(reporterl1_urid$plot)
+#analyze_uridylation()
+```
+
+
 ``` {r tail lengths distribution,message=FALSE,warning=FALSE,echo=FALSE}
 distrib<-plot_tail_length_distribution(data_processed,"LEAP_AU","LEAP",conditions=c("19A","19A3U"),max_tail_length = 30, min_tail_length=10,facet_conditions = T,AUtail = 'Ataila')
 print(distrib)
 ```
+
+
+# Reporter KD
+
+#### Analyzed first for all mapped reads, irrespective of mapping position (UTR,SV40 signal), only for TUTases and MOV10:
+
+```{r reporter kd urid, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+
+reporterl1_kd <- analyze_uridylation(processed_data2,"REPORTERL1KD","KD",include_jitter=T,facet_projects = F,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"))
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+
+reporterl1_kd <- analyze_uridylation(processed_data2,"REPORTERL1KD","KD",include_jitter=T,facet_projects = TRUE,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"))
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+```
+
+#### Analysis of mapping data:
+
+```{r reporter ovr mapping, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+kd_mapping_pos <- plot_mapping_positions(processed_data2,'REPORTERL1KD','KD',conditions = c("CNTRLKD"),mapping_position_min = 8000, mapping_position_max = 9200, facet_projects = T)
+print(kd_mapping_pos)
+```
+
+#### First peak is directly after LINE1 UTR, second is in the BGH adenylation sequence
+
+After filtering To BGH site:
+
+```{r reporter kd urid filter1, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+
+reporterl1_kd <- analyze_uridylation(processed_data2,"REPORTERL1KD","KD",include_jitter=T,facet_projects = F,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"),mapping_position_min = 8600,mapping_position_max = 8700)
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+```
+
+After filtering to before BGH site:
+
+```{r reporter kd urid filter2, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+
+reporterl1_kd <- analyze_uridylation(processed_data2,"REPORTERL1KD","KD",include_jitter=T,facet_projects = F,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"),mapping_position_max = 8600)
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+```
+
+
+
+#### Control of KD (there are 2: HGC and MGC) in the latest sequencing run has lower uridylation than in 1st seq
+
+After filtering to HGC only:
+
+```{r reporter kd urid filter3, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+processed_data_no_MGC <- processed_data2 %>% filter((condition=="CNTRLKD" & replicate<7) | condition!="CNTRLKD")
+reporterl1_kd <- analyze_uridylation(processed_data_no_MGC,"REPORTERL1KD","KD",include_jitter=T,facet_projects = F,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"))
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+reporterl1_kd <- analyze_uridylation(processed_data_no_MGC,"REPORTERL1KD","KD",include_jitter=T,facet_projects = T,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"))
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+```
+
+After filtering to MGC only:
+
+```{r reporter kd urid filter4, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+processed_data_no_MGC <- processed_data2 %>% filter((condition=="CNTRLKD" & replicate %in% c(1,2,3,7,8,9)) | condition!="CNTRLKD")
+reporterl1_kd <- analyze_uridylation(processed_data_no_MGC,"REPORTERL1KD","KD",include_jitter=T,facet_projects = F,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"))
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+reporterl1_kd <- analyze_uridylation(processed_data_no_MGC,"REPORTERL1KD","KD",include_jitter=T,facet_projects = T,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRLKD","TUT7KD","TUT4KD","MOV10KD","TUT4TUT7KD","TUT4TUT7MOV10KD"))
+print(reporterl1_kd$dunn_test)
+print(reporterl1_kd$plot)
+```
+
+# GAPDH overexpression
+
+```{r gapdh ovr urid, echo = FALSE,message=FALSE,warning=FALSE,echo=FALSE}
+reporterl1_urid <- analyze_uridylation(data_processed,"GAPDH","OVR",include_jitter=T,facet_projects = F,project = c("Tailseq_4","Tailseq_5","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"))
+print(reporterl1_urid$dunn_test)
+print(reporterl1_urid$plot)
+reporterl1_urid <- analyze_uridylation(data_processed,"GAPDH","OVR",include_jitter=T,facet_projects = T,project = c("Tailseq_4","Tailseq_5","Tailseq_3","Tailseq_2"),conditions=c("CNTRL","TUT7WT","TUT7MT","TUT4WT","TUT4MT","MOV10"))
+print(reporterl1_urid$dunn_test)
+print(reporterl1_urid$plot)
+```
+
+
+
+
+
+

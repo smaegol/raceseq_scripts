@@ -1986,3 +1986,25 @@ for (trans in levels(as.factor(tails_data_mapped_true_no_hetero_no_other_tails$t
   }
 }
 dev.off()
+
+
+
+processed_data2 <- data_processed %>% filter(tail_length <= 64)
+
+processed_data2[processed_data2$condition=='CNTRLKD_HGC' & processed_data2$replicate==1,]$replicate <- 4
+processed_data2[processed_data2$condition=='CNTRLKD_HGC' & processed_data2$replicate==2,]$replicate <- 5
+processed_data2[processed_data2$condition=='CNTRLKD_HGC' & processed_data2$replicate==3,]$replicate <- 6
+processed_data2[processed_data2$condition=='CNTRLKD_MGC' & processed_data2$replicate==1,]$replicate <- 7
+processed_data2[processed_data2$condition=='CNTRLKD_MGC' & processed_data2$replicate==2,]$replicate <- 8
+processed_data2[processed_data2$condition=='CNTRLKD_MGC' & processed_data2$replicate==3,]$replicate <- 9
+processed_data2[processed_data2$condition=='CNTRLKD_MGC',]$condition <- 'CNTRLKD'
+processed_data2[processed_data2$condition=='CNTRLKD_HGC',]$condition <- 'CNTRLKD'
+
+processed_data2[processed_data2$condition=='CONTROLKD_HGC' & processed_data2$replicate==1,]$replicate <- 4
+processed_data2[processed_data2$condition=='CONTROLKD_HGC' & processed_data2$replicate==2,]$replicate <- 5
+processed_data2[processed_data2$condition=='CONTROLKD_HGC' & processed_data2$replicate==3,]$replicate <- 6
+processed_data2[processed_data2$condition=='CONTROLKD_MGC' & processed_data2$replicate==1,]$replicate <- 7
+processed_data2[processed_data2$condition=='CONTROLKD_MGC' & processed_data2$replicate==2,]$replicate <- 8
+processed_data2[processed_data2$condition=='CONTROLKD_MGC' & processed_data2$replicate==3,]$replicate <- 9
+processed_data2[processed_data2$condition=='CONTROLKD_MGC',]$condition <- 'CNTRLKD'
+processed_data2[processed_data2$condition=='CONTROLKD_HGC',]$condition <- 'CNTRLKD'
