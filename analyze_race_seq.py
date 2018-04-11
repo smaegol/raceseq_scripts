@@ -19,8 +19,6 @@
 ###                                                                                 ###
 #######################################################################################
 
-
-
 import os
 import sys
 # srcipt path is required to find the location of files required for analysis (indexes and other scripts)
@@ -133,7 +131,6 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
         tails_results[seq_id] = {}
         tails_results[seq_id]['CTGAC_R5'] = 0  # set the initial value to 0
 
-
         tails_results[seq_id]['heterogenous_end'] = ''
         tails_results[seq_id]['heterogenous_end_R3'] = ''
         # create dict for storing final results for pair
@@ -204,7 +201,6 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
         if (len(tailseq_score_bitwise)-2>=8):
             tailseq_delimiter_not_found = int(tailseq_score_bitwise[-8])
 
-
         R5_mapping_pos = regex_match_for_R1.group('pos')
         R3_mapping_pos = regex_match_for_R2.group('pos')
 
@@ -228,7 +224,6 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
             R5_mapping_pos = int(R5_mapping_pos) - len(matched_CTGAC)
             clipped_R5 = matched_CTGAC + clipped_R5
             tails_results[seq_id]["mapping_spanning_delimiter"]=1
-
 
         # check for the presence of CTGAC in clipped R5 fragments
         # if yes - remove CTGAC and following bases, leave clipped fragment and correct its length
@@ -407,7 +402,6 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
         if (R5_sequenced_length<args.min_R5_length):
             tails_results[seq_id]['CTGAC_R5'] = 1
 
-
         # check for the presence of overexpression plasmid in the clipped fragment (in case of reporter LINE1 analyses)
         match_plasmid_R5 = re.search(regex_for_plasmid_seq, clipped_R5)
         if(match_plasmid_R5):
@@ -427,7 +421,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
             tails_results[seq_id]['tailseq_predicted_tail'] = tailseq_tail
 
             if (tailseq_tail_length > 0):
-                tails_results[seq_id]['CTGAC_R5'] = 1 #set to treat all tailseq_tails as true tails
+                tails_results[seq_id]['CTGAC_R5'] = 1  # set to treat all tailseq_tails as true tails
                 # if tailseq identified tail is > 0 bp
                 # treat this as a true tail but try to find this tails in the softclipping
                 if (regex_match_for_R1.group('pos') != "-1"):  # mapping of R5 read
@@ -590,7 +584,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                         tails_results[seq_id]['mapping'] = 'both'
                         if (clip3_R5_length == clip3_R3_length):
                             # if clipped sequences from both R5 and R3 read has the same length
-                            if (R5_sequenced_length>args.min_R5_length): #check if R5 had proper length, enough for looking for tails
+                            if (R5_sequenced_length>args.min_R5_length):  # check if R5 had proper length, enough for looking for tails
                                 if (clip3_R5_length > 0):  # if there is any clipping
                                     if(tails_results[seq_id]['CTGAC_R5'] > 0):
                                         # check if clipping of R5 ends with tailseq delimiter CTGAC (identified at the beginning of analysis)
@@ -643,7 +637,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                             # clipped sequences dont have the same length
                             # both R3 and R5 have different length than tailseq identified tail
                             # treat the R5 clipping as more reliable (especially if CTGAC delimiter sequence was identified in clipping)
-                            if (R5_sequenced_length>args.min_R5_length): #check if R5 had proper length, enough for looking for tails
+                            if (R5_sequenced_length>args.min_R5_length):  # check if R5 had proper length, enough for looking for tails
                                 if (tails_results[seq_id]['CTGAC_R5'] > 0):
                                     # check if clipping of R5 ends with tailseq delimiter CTGAC (identified at the beginning of analysis)
                                     tails_results[seq_id]['tail_source'] = 'no_tailseq_clip_clipping_different_lengths_R5_CTGAC'
@@ -658,7 +652,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                                     #    tails_results[seq_id]['tail_sequence'] = clipped_R3
                                     #else:
                                     tails_results[seq_id]['tail_sequence'] = clipped_R5
-                            else: #look for tail in R3
+                            else:  # look for tail in R3
                                 tail_match = re.match(
                                     regex_for_heuristic_tail_identification_R3, str(clipped_R3))
                                 if (tail_match):
@@ -675,7 +669,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
 
                     else:
                         # no R3 read was mapped, try to find tail in R5 read
-                        if (R5_sequenced_length>args.min_R5_length): #check if R5 had proper length, enough for looking for tails
+                        if (R5_sequenced_length>args.min_R5_length):  # check if R5 had proper length, enough for looking for tails
                             if (tails_results[seq_id]['CTGAC_R5'] > 0):
                                 # check if clipping of R5 ends with tailseq delimiter CTGAC (identified at the beginning of analysis)
                                 if(clip3_R5_length == 0):
@@ -934,8 +928,8 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
             #print(seq_id,count_As,ratio_As,count_Ts,ratio_Ts,sumAT,tails_results[seq_id]['tail_sequence'])
             if((tail_length>=4) & (sumAT>=0.75)):
                 match_AUtail = re.match("^(?P<Atail>^A+).*(T.|T)$", tail_sequence)
-                match_Utail = re.match("^TT.*",tail_sequence)
-                match_Atail = re.match("^AA.*A$",tail_sequence)
+                match_Utail = re.match("^TT.*", tail_sequence)
+                match_Atail = re.match("^AA.*A$", tail_sequence)
                 if (ratio_Ts>0.6):
                     if(match_AUtail):
                         tail_type_for_anal = 'A_mixed_U_mixed'
@@ -965,10 +959,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                         tail_type_for_anal = 'A_mixed'
                         tail_type = 'A_heterogenous'
 
-
-
                 #print(tail_type)
-
 
         # store final results
         final_results[seq_id]['tail_type'] = tail_type
@@ -1066,8 +1057,8 @@ for R5_file in glob.glob(files_to_search):
     replicate = temp['replicate'][0]  # replicate number
     sample_name = temp['Sample_Name'][0]  # sample name
     primer_name = temp['primer_name'][0]  # name of the primer used in RACE
-    project_name = temp.index.values[0] #get Project name
-    exp_type = temp['type'][0] #xperiment yype - OVR, KD, NT, LEAP ...
+    project_name = temp.index.values[0]  # get Project name
+    exp_type = temp['type'][0]  # experiment type - OVR, KD, NT, LEAP ...
     R5_sequenced_length = temp['R5_length'][0]
     # if bowtie was not run before - run bowtie2 on R5 and R3 files:
     # check if there is any sequence in R5 file, if not - skip analysis for this pair
