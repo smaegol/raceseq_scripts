@@ -1,0 +1,94 @@
+---
+title: "ENDOL1 raceseq analysis"
+author: "PK"
+date: "11 04 2018"
+output: [slidy_presentation, pdf]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## ENDOL1
+
+ENDOL1 sequences were analyzed using repeatmasker.
+
+- LINE only database for human cell lines
+- Mouse restricted database for mouse samples
+
+## Mice
+
+2-6 thousand sequences identified for each replicate
+
+```{r summary of reads}
+ENDOL1_mysz %>% group_by(project_name,primer_name,replicate) %>% count()
+```
+
+## Mice
+
+Most of tails is of A-only type, irrespective of primer used.
+For L1MMNGS1 there is more no_tail and U-only tails.
+
+```{r plot tails types,fig.width=15}
+ENDOL1_mysz %>% count() %>% group_by(project_name,primer_name,replicate) %>% mutate(freq=n/sum(n)) %>% ggplot(aes(x=primer_name,y=freq,group=tail_type,fill=tail_type)) + geom_bar(stat="identity",position="stack") + facet_grid(. ~  project_name + replicate) + scale_fill_grey()
+
+```
+
+## Mice - analysis of uridylation
+
+Observed uridylation - ~20% in all replicates
+
+```{r plot uridylation,fig.width=15}
+MYSZ_urid <- ENDOL1_mysz %>% group_by(project_name,primer_name,replicate,uridylated2) %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(replicate,project_name,primer_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(primer_name,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+MYSZ_urid %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=primer_name,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_jitter(aes(y=freq_urid)) + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + facet_grid(. ~project_name) + scale_fill_grey() + ylab("frequency of uridylated transcripts")
+
+
+```
+
+## H9 - summary of reads for each primer and replicate
+
+
+```{r summary of reads H9}
+ENDOL1_H9 %>% group_by(project_name,primer_name,replicate) %>% count()
+```
+
+## H9 tail types
+
+The only excepction in the uridylation level was for L1NGS0 primer in TailSeq_3 sequencing
+
+```{r plot tail types H9}
+ENDOL1_H9 %>% count() %>% group_by(project_name,primer_name,replicate) %>% mutate(freq=n/sum(n)) %>% ggplot(aes(x=replicate,y=freq,group=tail_type,fill=tail_type)) + geom_bar(stat="identity",position="stack") + facet_grid(. ~  project_name + primer_name) + scale_fill_grey()
+```
+
+## H9 uridylation
+
+uridylation level for H9 cell line is ~40% (except L1NGS0 in Tailseq_3 experiment)
+
+```{r plot urid H9,warnings=F,messages=F,fig.width=15}
+H9_urid %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=primer_name,y=mean_freq_urid,group=project_name,fill=project_name)) + geom_bar(stat="identity",position="dodge") + geom_jitter(aes(y=freq_urid,color=project_name,group=project_name),color="red") + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + scale_fill_grey() + ylab("frequency of uridylated transcripts") + facet_grid(. ~project_name)
+```
+
+
+## All Cell lines tail_types
+
+Only one replicate for: HELAHA,HEK_FLPIN,HEK_293T.
+
+All primers taken into consideration for each cell line.
+
+```{r plot tail types all}
+ENDOL1_all %>% count() %>% group_by(cell_line) %>% mutate(freq=n/sum(n)) %>% ggplot(aes(x=cell_line,y=freq,group=tail_type,fill=tail_type)) + geom_bar(stat="identity",position="stack")  + scale_fill_grey()
+```
+
+## All Cell lines uridylation
+
+Only one replicate for: HELAHA,HEK_FLPIN,HEK_293T.
+
+All primers taken into consideration for each cell line.
+
+```{r plot urid all}
+ALL_urid <- ENDOL1_all %>% group_by(project_name,primer_name,replicate,uridylated2,cell_line) %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(project_name,primer_name,replicate,cell_line) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(uridylated2,cell_line) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+ALL_urid %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=cell_line,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_jitter(aes(y=freq_urid)) + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + scale_fill_grey() + ylab("frequency of uridylated transcripts")
+
+```
+
+## END

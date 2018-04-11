@@ -2008,3 +2008,33 @@ processed_data2[processed_data2$condition=='CONTROLKD_MGC' & processed_data2$rep
 processed_data2[processed_data2$condition=='CONTROLKD_MGC' & processed_data2$replicate==3,]$replicate <- 9
 processed_data2[processed_data2$condition=='CONTROLKD_MGC',]$condition <- 'CNTRLKD'
 processed_data2[processed_data2$condition=='CONTROLKD_HGC',]$condition <- 'CNTRLKD'
+
+
+melt_data_localization_ENDO <- "/home/smaegol/storage/analyses/tail_seq_5/ALL_2/processing_out/ENDO_only.tsv"
+# read tailing information to data.frame using data.table
+tails_data_melt_ENDO <- fread(melt_data_localization_ENDO, sep = "\t", header = T, stringsAsFactors = T,
+                         data.table = F, showProgress = TRUE)  # read data
+ENDOL1_processed<-process_data(tails_data_melt_ENDO)
+ENDOL1_mysz<-ENDOL1_processed %>% filter(cell_line=='MYSZ') %>% group_by(project_name,primer_name,replicate,tail_type)
+ENDOL1_mysz %>% count() %>% group_by(project_name,primer_name,replicate) %>% mutate(freq=n/sum(n)) %>% View()
+ENDOL1_mysz %>% count() %>% group_by(project_name,primer_name,replicate) %>% mutate(freq=n/sum(n)) %>% ggplot(aes(x=primer_name,y=freq,group=tail_type,fill=tail_type)) + geom_bar(stat="identity",position="stack") + facet_grid(. ~  project_name + replicate) + scale_fill_grey()
+
+MYSZ_urid <- ENDOL1_mysz %>% group_by(project_name,primer_name,replicate,uridylated2) %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(replicate,project_name,primer_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(primer_name,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+MYSZ_urid %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=primer_name,y=mean_freq_urid,group=project_name,fill=project_name)) + geom_bar(stat="identity",position="dodge") + geom_jitter(aes(y=freq_urid)) + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + scale_fill_grey() + ylab("frequency of uridylated transcripts")
+
+
+ENDOL1_H9 <- ENDOL1_processed %>% filter(cell_line=="H9") %>% group_by(project_name,primer_name,replicate,tail_type)
+ENDOL1_H9 %>% count() %>% group_by(project_name,primer_name,replicate) %>% mutate(freq=n/sum(n)) %>% View()
+ENDOL1_H9 %>% count() %>% group_by(project_name,primer_name,replicate) %>% mutate(freq=n/sum(n)) %>% ggplot(aes(x=replicate,y=freq,group=tail_type,fill=tail_type)) + geom_bar(stat="identity",position="stack") + facet_grid(. ~  project_name + primer_name) + scale_fill_grey()
+
+H9_urid <- ENDOL1_H9 %>% group_by(project_name,primer_name,replicate,uridylated2) %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(replicate,project_name,primer_name) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(primer_name,uridylated2,project_name) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+H9_urid %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=primer_name,y=mean_freq_urid,group=project_name,fill=project_name)) + geom_bar(stat="identity",position="dodge") + geom_jitter(aes(y=freq_urid)) + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + scale_fill_grey() + ylab("frequency of uridylated transcripts")
+
+
+ENDOL1_all <- ENDOL1_processed  %>% group_by(tail_type,cell_line)
+ENDOL1_all %>% count() %>% group_by(project_name,primer_name,cell_line) %>% mutate(freq=n/sum(n)) %>% View()
+ENDOL1_all %>% count() %>% group_by(cell_line) %>% mutate(freq=n/sum(n)) %>% ggplot(aes(x=cell_line,y=freq,group=tail_type,fill=tail_type)) + geom_bar(stat="identity",position="stack")  + scale_fill_grey()
+
+ALL_urid <- ENDOL1_all %>% group_by(project_name,primer_name,replicate,uridylated2,cell_line) %>% dplyr::summarize(n_urid=n()) %>% ungroup() %>% dplyr::group_by(project_name,primer_name,replicate,cell_line) %>% dplyr::mutate(freq_urid = n_urid/sum(n_urid)) %>% dplyr::group_by(uridylated2,cell_line) %>% dplyr::mutate(mean_freq_urid = mean(freq_urid), sd_urid = sd(freq_urid))
+ALL_urid %>% filter(uridylated2==TRUE) %>% ggplot(aes(x=cell_line,y=mean_freq_urid)) + geom_bar(stat="identity",position="dodge") + geom_jitter(aes(y=freq_urid)) + geom_errorbar(aes(ymin =  mean_freq_urid - sd_urid, ymax = mean_freq_urid + sd_urid),colour = "black", width = 0.1, position = position_dodge(0.9)) + scale_fill_grey() + ylab("frequency of uridylated transcripts")
+
