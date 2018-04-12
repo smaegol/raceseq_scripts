@@ -34,7 +34,7 @@ identify_LINEs_script_path = script_path + "/identify_LINE_repeatmasker.py"
 transcript_genomes = {'GAPDH': script_path + '/indexes/GAPDH_noA',
                       'REPORTERL1KD': script_path + '/indexes/reporter_L1_sirna',
                       'REPORTERL1_overexp': script_path + '/indexes/reporter_L1_overexp',
-                      'REPORTERL1': script_path + '/indexes/reporterL1',
+                      'REPORTERL1': script_path + '/indexes/REPORTERL1',
                       'LEAP': script_path + '/indexes/LEAP',
                       'LEAP_AU': script_path + '/indexes/LEAP_AU',
                       'ACTB': '/home/smaegol/storage/analyses/tail_seq_3/genome/ActB',
@@ -617,7 +617,7 @@ def analyze_tails(R1, R2, transcript, sample_name, localization, replicate, cond
                                         tails_results[seq_id]['tail_sequence'] = ''
                                         tails_results[seq_id]['mapping_position'] = R5_mapping_pos
                             else:
-                                print ("R5 too short")
+                                #print ("R5 too short")
                                 #if R5 length is too low, look for possible tails in R3 read
                                 tail_match = re.match(
                                     regex_for_heuristic_tail_identification_R3, str(clipped_R3))
